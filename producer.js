@@ -10,7 +10,7 @@ const kafka = new Kafka({
 const topic = 'my-topic'
 const producer = kafka.producer()
 
-const getNumMessages = () => 10000
+const getNumMessages = () => 1000
 const getKey = () => uuidv4();
 const getRandomTemp = () => Math.round(Math.floor(Math.random() * 80))
 const getSensorId = () => Math.round(Math.floor(Math.random() * 100000))
@@ -47,7 +47,7 @@ const sendMessage = async () => {
 
 const run = async () => {
   await producer.connect()
-  setInterval(sendMessage, 1000)
+  setInterval(sendMessage, 100)
 }
 
 run().catch(e => console.error(`[example/producer] ${e.message}`, e))
