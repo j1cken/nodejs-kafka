@@ -3,7 +3,7 @@ const { Kafka, CompressionTypes, logLevel } = require('kafkajs')
 
 const kafka = new Kafka({
   logLevel: logLevel.INFO,
-  brokers: [`kafka.k3s:31664`],
+  brokers: [`my-cluster-kafka-bootstrap:9092`],
   clientId: 'example-producer',
 })
 
