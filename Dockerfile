@@ -2,7 +2,7 @@ FROM node:alpine
 
 # Add application sources
 ADD producer.js .
-ADD package.json
+ADD package.json .
 
 # Install the dependencies
 RUN npm install
