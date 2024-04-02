@@ -22,6 +22,8 @@ const getCoords = () => {
 
 const getGeoSpatialData = lodash.once(() => new Array(parseInt(process.env.NUM_VEHICLES)).fill().map(_ => getCoords()));
 
+// console.log(getGeoSpatialData());
+
 const getNumMessages = () => parseInt(process.env.NUM_MSG)
 const getKey = () => uuidv4();
 const getCustomerId = () => Math.round(Math.ceil(Math.random() * parseInt(process.env.NUM_CUSTOMERS)));
@@ -34,6 +36,9 @@ const getLocation = () => {
   return geoIndex >= 1 ? geo[geoIndex] : geo[0];
 };
 
+const getLoc = lodash.once(() => new Array(parseInt(process.env.NUM_VEHICLES)).fill().map(_ => getLocation()))
+
+
 const createMessage = (key, customerId, vehicleId, temp, loc, geo) => {
   // console.log("create", geo);
   kafkaMsg = {
@@ -41,12 +46,12 @@ const createMessage = (key, customerId, vehicleId, temp, loc, geo) => {
     // key: key,
     value: JSON.stringify({
       ts: new Date().toISOString(),
-      metadata: { "customerId": customerId, "vehicleId": vehicleId },
+      metadata: { customerId: customerId, vehicleId: vehicleId, location: loc[vehicleId - 1] },
       customerId: customerId,
       vehicleId: vehicleId,
       temperature: temp,
-      location: loc,
-      geoSpatial: { type: "Point", coordinates: geo[vehicleId-1] }
+      location: loc[vehicleId-1],
+      geoSpatial: { type: "Point", coordinates: geo[vehicleId - 1] }
     })
   }
   // console.log(kafkaMsg);
@@ -54,24 +59,33 @@ const createMessage = (key, customerId, vehicleId, temp, loc, geo) => {
 };
 
 const sendMessage = async () => {
+  // console.log(            createMessage(
+  //   getKey(),
+  //   getCustomerId(),
+  //   getVehicleId(),
+  //   getRandomTemp(),
+  //   getLoc(),
+  //   getGeoSpatialData()
+  // ));
+
   try {
-    let message = 
-    await producer.send({
-      topic,
-      compression: CompressionTypes.GZIP,
-      messages: Array(getNumMessages())
-        .fill()
-        .map(_ =>
-          createMessage(
-            getKey(),
-            getCustomerId(),
-            getVehicleId(),
-            getRandomTemp(),
-            getLocation(),
-            getGeoSpatialData()
+    let message =
+      await producer.send({
+        topic,
+        compression: CompressionTypes.GZIP,
+        messages: Array(getNumMessages())
+          .fill()
+          .map(_ =>
+            createMessage(
+              getKey(),
+              getCustomerId(),
+              getVehicleId(),
+              getRandomTemp(),
+              getLoc(),
+              getGeoSpatialData()
+            )
           )
-        )
-    });
+      });
     console.log(`[producer/send] ${message}`, message);
   } catch (e) {
     console.error(`[producer/send] ${e.message}`, e);
